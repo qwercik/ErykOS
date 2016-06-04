@@ -41,9 +41,13 @@ public:
 	void setFontColor(Color fontColor);
 	void setBackgroundColor(Color backgroundColor);
 
+	void hideCursor();
+	void showCursor();
 	//void moveCursorXY(uint8_t positionX, uint8_t positionY); //not developed yet
 private:
 
+	bool isCursorEnabled;
+	
 	const uint8_t screenHeight;
 	const uint8_t screenWidth;
 

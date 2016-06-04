@@ -10,6 +10,8 @@ Screen::Screen(Color fontColor, Color backgroundColor) :screenHeight(25), screen
 
 	currentPositionX = 0;
 	currentPositionY = 0;
+
+	isCursorEnabled = true;
 }
 
 void Screen::printChar(uint8_t character)
@@ -22,19 +24,16 @@ void Screen::printChar(uint8_t character)
 				scrollScreen();
 			else
 				currentPositionY++;
-
-			updateCursor();
 			break;
 
 		case '\r':
 			currentPositionX = 0;
-			updateCursor();
 			break;
 
 
 		default:
 			uint16_t resultCursorPosition = currentPositionY * screenWidth + currentPositionX;
-			uint16_t videoData = ((backgroundColor << 1 | fontColor) << 8) | character;
+			uint16_t videoData = ((fontColor | backgroundColor << 4) << 8) | character;
 
 			*(videoMemory + resultCursorPosition) = videoData;
 
@@ -46,8 +45,10 @@ void Screen::printChar(uint8_t character)
 			}
 			else
 				currentPositionX++;
-			}
-			updateCursor();
+		}
+	
+	if (isCursorEnabled)
+		updateCursor();
 
 }
 
@@ -79,7 +80,7 @@ void Screen::clearScreen()
 
 	updateCursor();
 
-	uint16_t videoData = 0x20 | ((0x07) << 8); //try later to change this
+	uint16_t videoData = 0x20 | ((fontColor | backgroundColor << 4) << 8); //try later to change this
 
 	for (int i = 0; i < screenHeight * screenWidth; i++)
 		*(videoMemory + i) = videoData;
@@ -119,4 +120,28 @@ void Screen::scrollScreen()
 	currentPositionY = screenHeight - 1;
 
 	updateCursor();
+}
+
+void Screen::hideCursor()
+{
+	isCursorEnabled = false;
+
+	uint16_t cursorPosition = screenHeight * screenWidth + 1;
+
+	outportb(0x3D4, 14); //Setting to send high byte of 16bit cursorposition variable
+	outportb(0x3D5, (cursorPosition >> 8) & 0xFF); //Sending high byte
+	outportb(0x3D4, 15); //Setting to send low byte
+	outportb(0x3D5, cursorPosition & 0xFF); //Sending low byte of 16bit cursorposition variable
+}
+
+void Screen::showCursor()
+{
+	isCursorEnabled = true;
+
+	uint16_t cursorPosition = currentPositionY * screenWidth + currentPositionX;
+
+	outportb(0x3D4, 14); //Setting to send high byte of 16bit cursorposition variable
+	outportb(0x3D5, (cursorPosition >> 8) & 0xFF); //Sending high byte
+	outportb(0x3D4, 15); //Setting to send low byte
+	outportb(0x3D5, cursorPosition & 0xFF); //Sending low byte of 16bit cursorposition variable
 }
