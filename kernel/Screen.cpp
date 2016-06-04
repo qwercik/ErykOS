@@ -39,9 +39,12 @@ void Screen::printChar(uint8_t character)
 
 			if (currentPositionX + 1 == screenWidth)
 			{
+				currentPositionX = 0;
+				currentPositionY++;
+
 				if (currentPositionY == screenHeight - 1)
 					scrollScreen();
-				currentPositionX = 0;
+				
 			}
 			else
 				currentPositionX++;
@@ -60,7 +63,7 @@ void Screen::printString(string stringToPrint)
 		printChar(stringToPrint[i - 1]);
 }
 
-void Screen::clearLine(uint8_t lineNumber
+void Screen::clearLine(uint8_t lineNumber)
 {
 	currentPositionX = 0;
 
@@ -142,4 +145,13 @@ void Screen::showCursor()
 	outportb(0x3D5, (cursorPosition >> 8) & 0xFF); //Sending high byte
 	outportb(0x3D4, 15); //Setting to send low byte
 	outportb(0x3D5, cursorPosition & 0xFF); //Sending low byte of 16bit cursorposition variable
+}
+
+void Screen::moveCursorXY(uint8_t positionX, uint8_t positionY)
+{
+	currentPositionX = positionX;
+	currentPositionY = positionY;
+
+	if (isCursorEnabled)
+		updateCursor();
 }
