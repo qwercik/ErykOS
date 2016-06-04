@@ -60,14 +60,12 @@ void Screen::printString(string stringToPrint)
 		printChar(stringToPrint[i - 1]);
 }
 
-void Screen::clearLine(uint8_t lineNumber) //Bug, i fix this later
+void Screen::clearLine(uint8_t lineNumber
 {
-
 	currentPositionX = 0;
-	updateCursor();
 
-	uint16_t videoData = ' ' | ((backgroundColor * 17) << 8);
-	uint8_t linePosition = screenWidth * lineNumber;
+	uint16_t videoData = 0x20 | ((fontColor | backgroundColor << 4) << 8);
+	uint16_t linePosition = screenWidth * lineNumber;
 
 	for (int i = 0; i < screenWidth; i++)
 		*(videoMemory + linePosition + i) = videoData;
