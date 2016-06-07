@@ -1,22 +1,18 @@
-export LD_LIBRARY_PATH=kernel/include
-OBJS=obj/loader.o obj/kernel.o obj/Screen.o obj/ioports.o
-LDPARAMS = 
-GPPPARAMS= -m32 -fno-use-cxa-atexit -nostdlib -fno-rtti -fno-exceptions -fno-leading-underscore -Wwrite-strings  -Iinclude
+GPPPARAMS= -m32 -fno-use-cxa-atexit -Wall -Wextra -nostdlib -fno-rtti -fno-exceptions -ffreestanding -fno-leading-underscore -Wwrite-strings  -Iinclude
+OBJS=obj/loader.o obj/kernel.o obj/Screen.o obj/ioports.o obj/string.o obj/math.o obj/stdlib.o
+#Temporary, I'm linking libc .o files with kernel files. Later I'm going to use GNU/ar
 
 ErykOS.iso: kernel.bin
 	grub-mkrescue -o $@ iso/
+
 kernel.bin: $(OBJS)
 	ld -m elf_i386 -T link.ld $^ -o iso/boot/$@
 
-obj/loader.o: kernel/loader.asm
+obj/%.o: kernel/%.asm
 	nasm -f elf32 $< -o $@
 
-obj/kernel.o: kernel/kernel.cpp
+obj/%.o: kernel/%.cpp
 	g++ -c $< -o $@ $(GPPPARAMS)
 
-obj/Screen.o: kernel/Screen.cpp
+obj/%.o: libc/%.cpp
 	g++ -c $< -o $@ $(GPPPARAMS)
-
-obj/ioports.o: kernel/ioports.cpp
-	g++ -c $< -o $@ $(GPPPARAMS)
-
