@@ -30,6 +30,6 @@ loader:
 	jmp $
 
 section .bss
-
+align 4
 stack:
 	resb STACK_SIZE
