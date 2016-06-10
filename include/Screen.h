@@ -32,7 +32,7 @@ public:
 	Screen(Color fontColor = WHITE, Color backgroundColor = BLACK);
 
 	void printChar(uint8_t character);
-	void printString(string stringToPrint);
+	void printString(string stringToPrint, ...);
 
 	void clearScreen();
 	void clearLine(uint8_t lineNumber);

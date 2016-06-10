@@ -1,4 +1,6 @@
 #include <Screen.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include <ioports.h>
 
 Screen::Screen(Color fontColor, Color backgroundColor) :screenHeight(25), screenWidth(80)
@@ -30,7 +32,13 @@ void Screen::printChar(uint8_t character)
 			currentPositionX = 0;
 			break;
 
-
+		case '\b':
+			if (currentPositionX > 0)
+			{
+				currentPositionX--;
+				moveCursorXY(currentPositionX, currentPositionY);
+			}
+			break;
 		default:
 			uint16_t resultCursorPosition = currentPositionY * screenWidth + currentPositionX;
 			uint16_t videoData = ((fontColor | backgroundColor << 4) << 8) | character;
@@ -55,12 +63,37 @@ void Screen::printChar(uint8_t character)
 
 }
 
-void Screen::printString(string stringToPrint)
+void Screen::printString(string stringToPrint, ...)
 {
 	int i = 0;
-	
-	while (stringToPrint[i++] != '\0')
-		printChar(stringToPrint[i - 1]);
+	char buffer[9];
+	va_list argumentsToPrint;
+	va_start(argumentsToPrint, stringToPrint);
+
+	while (stringToPrint[i] != '\0')
+	{	
+		switch (stringToPrint[i])
+		{
+			case '%':
+				switch (stringToPrint[i + 1])
+				{
+					case 'd':
+						printString(itoa(va_arg(argumentsToPrint, int), buffer, 10));
+						break;
+					case 's':
+						printString(va_arg(argumentsToPrint, string));
+						break;
+				}
+				i++;
+			break;
+
+			default:
+				printChar(stringToPrint[i]);
+
+		}
+
+		i++;
+	}
 }
 
 void Screen::clearLine(uint8_t lineNumber)
